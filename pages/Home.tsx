@@ -103,8 +103,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
             Curated <span className="text-indigo-600">Visual</span> Intelligence.
           </h1>
           <p className="text-xl text-zinc-500 font-medium max-w-2xl mx-auto leading-relaxed">
-            High-performance imagery cataloged with Gemini AI for professional creators.
-          </p>
+          Picghor — The High-Performance Hub for Creative Assets.</p>
         </div>
         
         <div className="relative max-w-2xl mx-auto group">
