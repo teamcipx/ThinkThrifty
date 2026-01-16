@@ -77,15 +77,10 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
           </div>
         </div>
       </section>
-
-{/* Category Navigation */}
-      <div className="fixed top-24 left-0 w-full z-40 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
-        {/* 
-            pointer-events-none: যাতে nav-এর বাইরের ফাঁকা জায়গায় ক্লিক করলে পেছনের কন্টেন্ট কাজ করে।
-            glass-nav-এ pointer-events-auto দিতে হবে যাতে বাটনগুলো কাজ করে।
-        */}
+{/* Category Navigation - Fixed at Bottom */}
+      <div className="fixed bottom-8 left-0 w-full z-50 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
         
-        <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-sm pointer-events-auto bg-white/30 backdrop-blur-md">
+        <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-2xl pointer-events-auto bg-white/80 backdrop-blur-xl transition-transform duration-300 hover:scale-105">
           <button
             onClick={() => setSelectedCategory('All')}
             className={`px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all ${
@@ -94,7 +89,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
                 : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
             }`}
           >
-            All Assets
+            All
           </button>
           {CATEGORIES.map(cat => (
             <button
