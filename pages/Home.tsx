@@ -77,6 +77,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
           </div>
         </div>
       </section>
+
       <div class="flex flex-col items-center justify-center gap-2 py-4">
   <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
     Advertisement
@@ -97,7 +98,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
     
   </div>
 </div>
-
+      
 {/* Category Navigation - Fixed at Bottom */}
       <div className="bottom-8 left-0 w-full z-50 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
         
@@ -178,4 +179,3 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
 };
 
 export default Home;
-
