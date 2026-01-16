@@ -103,6 +103,26 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-white border-t border-gray-200 py-12 mt-12">
+        <div class="flex flex-col items-center justify-center gap-2 py-4">
+  <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+    Advertisement
+  </span>
+
+  <div class="relative w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center">
+    
+    <script type="text/javascript">
+      atOptions = {
+        'key' : '65ec9f7d8d86083bf154bf98b07df8f1',
+        'format' : 'iframe',
+        'height' : 60,
+        'width' : 468,
+        'params' : {}
+      };
+    </script>
+    <script type="text/javascript" src="https://www.highperformanceformat.com/65ec9f7d8d86083bf154bf98b07df8f1/invoke.js"></script>
+    
+  </div>
+</div>
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
