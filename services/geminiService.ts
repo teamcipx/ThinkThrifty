@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
@@ -34,8 +33,8 @@ export const geminiService = {
     });
 
     const text = response.text;
-    if (!text) {
-      throw new Error("Gemini API returned an empty response.");
+    if (typeof text !== 'string') {
+      throw new Error("Gemini API returned an invalid or empty response.");
     }
 
     return JSON.parse(text);
