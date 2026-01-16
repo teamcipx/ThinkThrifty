@@ -78,7 +78,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
         </div>
       </section>
 {/* Category Navigation - Fixed at Bottom */}
-      <div className="fixed bottom-8 left-0 w-full z-50 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
+      <div className="bottom-8 left-0 w-full z-50 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
         
         <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-2xl pointer-events-auto bg-white/80 backdrop-blur-xl transition-transform duration-300 hover:scale-105">
           <button
