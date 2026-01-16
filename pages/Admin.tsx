@@ -87,19 +87,19 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm('Are you sure you want to remove this asset from the repository?')) return;
+    if (!window.confirm('Delete this asset? This cannot be undone.')) return;
     try {
       await storageService.delete(id);
       setImages(prev => prev.filter(img => img.id !== id));
     } catch (err) {
-      alert('Failed to delete image');
+      alert('Failed to delete asset');
     }
   };
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fileInputRef.current?.files?.[0]) {
-      alert('Please select an image first');
+      alert('Please select an image');
       return;
     }
     
@@ -136,7 +136,6 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
         };
 
         await storageService.save(metadata);
-        alert('Image published successfully!');
         
         setFormData(prev => ({ ...prev, title: '', description: '', keywords: '', slug: '' }));
         setPreviewUrl(null);
@@ -157,23 +156,26 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
 
   if (!isAuthenticated) {
     return (
-      <div className="max-w-md mx-auto py-20">
-        <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Portal</h1>
-            <p className="text-gray-500 text-sm">Enter password to access dashboard</p>
+      <div className="max-w-md mx-auto py-32 animate-in fade-in zoom-in duration-700 px-6">
+        <div className="bg-white p-12 rounded-[2.5rem] shadow-2xl border border-zinc-100">
+          <div className="text-center mb-10">
+            <div className="w-16 h-16 bg-zinc-900 rounded-3xl flex items-center justify-center text-white font-black text-2xl mx-auto mb-6">P</div>
+            <h1 className="text-3xl font-black text-zinc-900 tracking-tighter">System Access</h1>
+            <p className="text-zinc-400 font-medium text-sm mt-2">Internal Curator Authentication</p>
           </div>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <input
-              type="password"
-              placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoFocus
-            />
-            <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all">
-              Unlock Dashboard
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <input
+                type="password"
+                placeholder="••••••••"
+                className="w-full px-6 py-4 rounded-2xl border border-zinc-200 bg-zinc-50 focus:bg-white focus:ring-2 focus:ring-zinc-900 focus:border-transparent outline-none transition-all text-center text-lg tracking-[0.3em] font-black"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <button className="w-full bg-zinc-900 hover:bg-indigo-600 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-zinc-200 active:scale-[0.98] uppercase tracking-[0.2em] text-xs">
+              Open Dashboard
             </button>
           </form>
         </div>
@@ -182,76 +184,65 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-12 animate-in slide-in-from-bottom-6 duration-700 py-10 px-4">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Picghor Dashboard</h1>
-          <p className="text-gray-500">Manage your assets and repository performance</p>
+          <h1 className="text-4xl font-black text-zinc-900 tracking-tighter">Studio Management</h1>
+          <p className="text-zinc-400 font-medium">Picghor Repository Control Center</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex bg-gray-100 p-1 rounded-xl">
+        <div className="flex items-center gap-4">
+          <div className="flex bg-zinc-100 p-1.5 rounded-2xl border border-zinc-200">
              <button 
                onClick={() => setActiveTab('upload')}
-               className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+               className={`px-8 py-2.5 rounded-xl text-xs font-black tracking-[0.1em] uppercase transition-all ${activeTab === 'upload' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
              >
-               Upload Center
+               Ingest
              </button>
              <button 
                onClick={() => setActiveTab('library')}
-               className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'library' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+               className={`px-8 py-2.5 rounded-xl text-xs font-black tracking-[0.1em] uppercase transition-all ${activeTab === 'library' ? 'bg-white shadow-sm text-zinc-900' : 'text-zinc-400 hover:text-zinc-600'}`}
              >
-               Asset Library
+               Inventory
              </button>
           </div>
           <button 
             onClick={() => { localStorage.removeItem('snapvault_admin_token'); window.location.reload(); }}
-            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-            title="Logout"
+            className="w-12 h-12 rounded-2xl border border-zinc-200 flex items-center justify-center text-zinc-300 hover:text-red-500 hover:border-red-100 transition-all"
+            title="Secure Logout"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h4 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Assets</h4>
-          <p className="text-3xl font-extrabold text-gray-900">{images.length}</p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h4 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Total Downloads</h4>
-          <p className="text-3xl font-extrabold text-indigo-600">{totalDownloads}</p>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h4 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">AI Status</h4>
-          <div className="flex items-center gap-2 mt-1">
-            <div className={`w-2.5 h-2.5 rounded-full ${isAnalyzing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
-            <span className="text-sm font-bold text-gray-700">{isAnalyzing ? 'Analyzing...' : 'Ready'}</span>
+        {[
+          { label: 'Total Assets', val: images.length, color: 'text-zinc-900' },
+          { label: 'Aggregate Downloads', val: totalDownloads, color: 'text-indigo-600' },
+          { label: 'AI Integrity', val: '100%', color: 'text-zinc-900' },
+          { label: 'Active Service', val: 'ImgBB/G3', color: 'text-zinc-900' }
+        ].map((stat, i) => (
+          <div key={i} className="bg-white p-8 rounded-[2rem] border border-zinc-100 shadow-sm space-y-2">
+            <h4 className="text-[10px] font-black text-zinc-300 uppercase tracking-[0.25em]">{stat.label}</h4>
+            <p className={`text-4xl font-black tracking-tighter ${stat.color}`}>{stat.val}</p>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-          <h4 className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mb-1">Cloud Engine</h4>
-          <p className="text-sm font-bold text-gray-700 mt-1">ImgBB + Gemini 3</p>
-        </div>
+        ))}
       </div>
 
       {activeTab === 'upload' ? (
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <form onSubmit={handleUpload} className="divide-y divide-gray-100">
-            <div className="p-8 space-y-4">
-               <label className="block text-sm font-bold text-gray-900 uppercase tracking-wider">Step 1: Select Visual Asset</label>
-               <div className="flex flex-col md:flex-row gap-8">
-                 <div className="w-full md:w-64 aspect-square bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
+        <div className="bg-white rounded-[3rem] shadow-2xl border border-zinc-100 overflow-hidden animate-in fade-in duration-500">
+          <form onSubmit={handleUpload} className="divide-y divide-zinc-50">
+            <div className="p-12 space-y-8">
+               <div className="flex flex-col md:flex-row gap-12">
+                 <div className="w-full md:w-80 aspect-square bg-zinc-50 rounded-[2.5rem] border-2 border-dashed border-zinc-200 flex items-center justify-center overflow-hidden relative group transition-all hover:border-indigo-400">
                    {previewUrl ? (
                      <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
                    ) : (
-                     <div className="text-center p-4">
-                        <svg className="w-10 h-10 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Select Image</span>
+                     <div className="text-center p-8 space-y-4">
+                        <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-zinc-100 mx-auto flex items-center justify-center text-zinc-300 group-hover:text-indigo-500 transition-colors">
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                        </div>
+                        <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest">Select Source File</p>
                      </div>
                    )}
                    <input 
@@ -261,28 +252,27 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
                     className="absolute inset-0 opacity-0 cursor-pointer z-10" 
                     accept="image/*"
                    />
-                   <div className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/10 transition-colors pointer-events-none"></div>
                  </div>
                  
-                 <div className="flex-grow space-y-4">
-                   <div className={`p-6 rounded-2xl transition-all ${isAnalyzing ? 'bg-indigo-50 text-indigo-700' : 'bg-gray-50 text-gray-600'}`}>
-                     <div className="flex items-center gap-3 mb-2">
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                       </svg>
-                       <p className="font-bold text-sm uppercase tracking-widest">Gemini Intelligent Analysis</p>
+                 <div className="flex-grow space-y-6 flex flex-col justify-center">
+                   <div className={`p-8 rounded-[2rem] transition-all border ${isAnalyzing ? 'bg-indigo-50 border-indigo-100' : 'bg-zinc-50 border-zinc-100'}`}>
+                     <div className="flex items-center gap-4 mb-4">
+                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${isAnalyzing ? 'bg-indigo-600 text-white' : 'bg-zinc-900 text-white'}`}>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                       </div>
+                       <h3 className="font-black text-zinc-900 text-sm tracking-widest uppercase">Gemini Auto-Curation</h3>
                      </div>
-                     <p className="text-sm opacity-80 leading-relaxed">
-                       Once you select an image, our AI will automatically generate SEO titles, descriptive slugs, and relevant keywords to save you time.
+                     <p className="text-sm text-zinc-500 font-medium leading-relaxed">
+                       Our vision model will automatically generate professional-grade metadata, optimizing your asset for global discoverability.
                      </p>
                      {isAnalyzing && (
-                       <div className="flex items-center gap-3 mt-4">
-                         <div className="flex gap-1">
-                           <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce"></div>
-                           <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                           <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce [animation-delay:0.4s]"></div>
+                       <div className="flex items-center gap-4 mt-6">
+                         <div className="flex gap-1.5">
+                           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"></div>
+                           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                           <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                          </div>
-                         <span className="text-xs font-bold uppercase tracking-widest">Processing Image Metadata...</span>
+                         <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Cognitive Processing...</span>
                        </div>
                      )}
                    </div>
@@ -290,180 +280,141 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
                </div>
             </div>
 
-            <div className="p-8">
-              <label className="block text-sm font-bold text-gray-900 uppercase tracking-wider mb-6">Step 2: Refine Metadata</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Image Title</label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    value={formData.title}
-                    onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Author / Artist</label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    value={formData.author}
-                    onChange={(e) => setFormData({...formData, author: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Category</label>
-                  <select
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
-                    value={formData.category}
-                    onChange={(e) => setFormData({...formData, category: e.target.value})}
-                  >
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Custom Slug</label>
-                  <input
-                    required
-                    type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all font-mono text-xs"
-                    value={formData.slug}
-                    onChange={(e) => setFormData({...formData, slug: e.target.value})}
-                  />
-                </div>
+            <div className="p-12 bg-zinc-50/30">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                {[
+                  { label: 'Asset Title', id: 'title' },
+                  { label: 'Creator Signature', id: 'author' },
+                  { label: 'Category Tag', id: 'category', type: 'select' },
+                  { label: 'SEO Path (Slug)', id: 'slug' }
+                ].map((field) => (
+                  <div key={field.id} className="space-y-2">
+                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">{field.label}</label>
+                    {field.type === 'select' ? (
+                      <select
+                        className="w-full px-6 py-4 rounded-2xl border border-zinc-100 bg-white focus:ring-2 focus:ring-zinc-900 outline-none transition-all appearance-none font-bold text-sm"
+                        value={formData.category}
+                        onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      >
+                        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    ) : (
+                      <input
+                        required
+                        type="text"
+                        className="w-full px-6 py-4 rounded-2xl border border-zinc-100 bg-white focus:ring-2 focus:ring-zinc-900 outline-none transition-all font-bold text-sm"
+                        value={formData[field.id as keyof typeof formData]}
+                        onChange={(e) => setFormData({...formData, [field.id]: e.target.value})}
+                      />
+                    )}
+                  </div>
+                ))}
                 <div className="col-span-full space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Description</label>
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Contextual Description</label>
                   <textarea
                     required
-                    rows={2}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    rows={3}
+                    className="w-full px-6 py-4 rounded-2xl border border-zinc-100 bg-white focus:ring-2 focus:ring-zinc-900 outline-none transition-all font-medium text-sm"
                     value={formData.description}
                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                   />
                 </div>
                 <div className="col-span-full space-y-2">
-                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">Keywords (Comma Separated)</label>
+                  <label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">Keywords Cluster</label>
                   <input
                     required
                     type="text"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-100 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-6 py-4 rounded-2xl border border-zinc-100 bg-white focus:ring-2 focus:ring-zinc-900 outline-none transition-all font-medium text-sm"
                     value={formData.keywords}
                     onChange={(e) => setFormData({...formData, keywords: e.target.value})}
+                    placeholder="Nature, Minimal, High Quality, etc."
                   />
                 </div>
               </div>
             </div>
 
-            <div className="p-8 bg-gray-50 flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="w-full md:w-1/2">
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2">Target Cloud Service Provider</label>
-                <div className="flex items-center gap-2">
-                   <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
-                     <svg className="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                       <path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V10H9v3H5.5z" />
-                     </svg>
-                   </div>
-                   <span className="text-xs font-bold text-gray-600">ImgBB Secure Storage</span>
-                </div>
+            <div className="p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="text-zinc-400 text-xs font-medium max-w-sm">
+                By publishing, you agree to make this asset available under the studio's digital licensing agreement.
               </div>
               <button 
                 disabled={isUploading || isAnalyzing}
-                className={`w-full md:w-auto px-12 py-4 rounded-2xl font-bold text-white shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${
-                  isUploading || isAnalyzing ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100'
+                className={`w-full md:w-auto px-16 py-6 rounded-[1.5rem] font-black text-white shadow-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-4 uppercase tracking-[0.2em] text-xs ${
+                  isUploading || isAnalyzing ? 'bg-zinc-200 cursor-not-allowed' : 'bg-zinc-900 hover:bg-indigo-600 shadow-zinc-200'
                 }`}
               >
-                {isUploading && (
-                  <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                )}
-                {isUploading ? 'Synchronizing...' : 'Publish to Picghor'}
+                {isUploading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Finalizing Upload...
+                  </>
+                ) : 'Publish to Repository'}
               </button>
             </div>
           </form>
         </div>
       ) : (
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <div className="p-8 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="font-bold text-gray-900 uppercase tracking-wider text-sm">Asset Inventory</h3>
+        <div className="bg-white rounded-[3rem] shadow-2xl border border-zinc-100 overflow-hidden animate-in fade-in duration-500">
+          <div className="p-10 border-b border-zinc-50 flex items-center justify-between">
+            <h3 className="font-black text-zinc-900 uppercase tracking-[0.2em] text-xs">Repository Inventory</h3>
             <button 
               onClick={loadLibrary}
-              className="text-indigo-600 text-xs font-bold hover:underline"
+              className="text-zinc-400 text-[10px] font-black uppercase tracking-widest hover:text-indigo-600 transition-colors"
             >
-              Refresh Library
+              Refresh View
             </button>
           </div>
           
           {loadingLibrary ? (
-            <div className="p-20 text-center">
-               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mx-auto mb-4"></div>
-               <p className="text-gray-400 text-sm">Loading inventory...</p>
+            <div className="p-40 text-center space-y-4">
+               <div className="w-10 h-10 border-4 border-zinc-100 border-t-zinc-900 rounded-full animate-spin mx-auto"></div>
+               <p className="text-zinc-400 text-xs font-black tracking-widest uppercase">Querying Database...</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-gray-50/50">
-                    <th className="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Asset</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Details</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Stats</th>
-                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                    <th className="px-8 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                  <tr className="bg-zinc-50/50">
+                    <th className="px-10 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Master Asset</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Metadata</th>
+                    <th className="px-6 py-5 text-[10px] font-black text-zinc-400 uppercase tracking-widest">Engagement</th>
+                    <th className="px-10 py-5 text-right text-[10px] font-black text-zinc-400 uppercase tracking-widest">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-zinc-50">
                   {images.map((img) => (
-                    <tr key={img.id} className="hover:bg-gray-50/50 transition-colors group">
-                      <td className="px-8 py-4">
-                        <div className="flex items-center gap-4">
-                          <img src={img.thumbnailUrl} className="w-12 h-12 rounded-lg object-cover bg-gray-100" />
+                    <tr key={img.id} className="hover:bg-zinc-50/30 transition-colors group">
+                      <td className="px-10 py-6">
+                        <div className="flex items-center gap-6">
+                          <div className="w-16 h-16 rounded-2xl overflow-hidden border border-zinc-100 bg-zinc-50 shadow-sm">
+                            <img src={img.thumbnailUrl} className="w-full h-full object-cover" />
+                          </div>
                           <div>
-                            <p className="font-bold text-gray-900 text-sm line-clamp-1">{img.title}</p>
-                            <p className="text-[10px] text-gray-400 font-mono uppercase">{img.slug}</p>
+                            <p className="font-black text-zinc-900 text-sm tracking-tight">{img.title}</p>
+                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-0.5">{img.slug}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                         <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded uppercase tracking-wider">
+                      <td className="px-6 py-6">
+                         <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 uppercase tracking-wider">
                            {img.category}
                          </span>
-                         <p className="text-[10px] text-gray-500 mt-1">By {img.author}</p>
+                         <p className="text-[10px] text-zinc-400 font-bold mt-2 uppercase tracking-widest italic opacity-70">{img.author}</p>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-gray-600">
-                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                           </svg>
-                           <span className="text-xs font-bold">{img.downloadCount || 0}</span>
+                      <td className="px-6 py-6">
+                        <div className="flex items-center gap-2 text-zinc-900">
+                           <svg className="w-4 h-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                           <span className="text-sm font-black tracking-tight">{img.downloadCount || 0}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <p className="text-xs text-gray-400 font-medium">{new Date(img.createdAt).toLocaleDateString()}</p>
-                      </td>
-                      <td className="px-8 py-4 text-right">
-                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <a 
-                              href={`#p/${img.slug}`} 
-                              target="_blank" 
-                              className="p-2 text-gray-400 hover:text-indigo-600 transition-colors"
-                              title="View"
-                            >
-                               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                               </svg>
-                            </a>
+                      <td className="px-10 py-6 text-right">
+                         <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
                             <button 
                               onClick={() => handleDelete(img.id)}
-                              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                              title="Delete"
+                              className="w-10 h-10 rounded-xl bg-red-50 text-red-400 hover:bg-red-600 hover:text-white transition-all flex items-center justify-center border border-red-100"
+                              title="Expunge Asset"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             </button>
                          </div>
                       </td>
@@ -471,8 +422,8 @@ const Admin: React.FC<AdminProps> = ({ isAuthenticated, onAuthenticate }) => {
                   ))}
                   {images.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="py-20 text-center text-gray-400 text-sm italic">
-                        No assets found in the repository.
+                      <td colSpan={4} className="py-40 text-center text-zinc-300 text-sm font-black uppercase tracking-widest italic">
+                        Empty Archive.
                       </td>
                     </tr>
                   )}
