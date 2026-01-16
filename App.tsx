@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, ImageMetadata } from './types';
-import { BrowserRoute, Routes, Route } from 'react-router-dom';
 import { ADMIN_SECRET_PATH } from './constants';
 import { storageService } from './services/storageService';
 import Navbar from './components/Navbar';
