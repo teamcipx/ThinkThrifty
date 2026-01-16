@@ -78,9 +78,14 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
         </div>
       </section>
 
-      {/* Category Navigation */}
-      <div className="sticky top-24 z-40 flex flex-wrap justify-center gap-2 py-4">
-        <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-sm">
+{/* Category Navigation */}
+      <div className="fixed top-24 left-0 w-full z-40 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
+        {/* 
+            pointer-events-none: যাতে nav-এর বাইরের ফাঁকা জায়গায় ক্লিক করলে পেছনের কন্টেন্ট কাজ করে।
+            glass-nav-এ pointer-events-auto দিতে হবে যাতে বাটনগুলো কাজ করে।
+        */}
+        
+        <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-sm pointer-events-auto bg-white/30 backdrop-blur-md">
           <button
             onClick={() => setSelectedCategory('All')}
             className={`px-6 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all ${
@@ -106,7 +111,6 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
           ))}
         </div>
       </div>
-
       {/* Image Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4">
         {filteredImages.length > 0 ? (
