@@ -1,7 +1,6 @@
-
 export const ADMIN_SECRET_PATH = 'server-internal-access';
 export const ADMIN_PASSWORD = 'admin'; 
-export const LOCAL_STORAGE_KEY = 'snapvault_metadata_v1';
+export const LOCAL_STORAGE_KEY = 'picghor_metadata_v1';
 export const CATEGORIES = ['Nature', 'Architecture', 'Technology', 'Abstract', 'People', 'Animals', 'Business'];
 
 export const DEFAULT_IMGBB_API_KEY = '5e66705a72b74bc10253029076d35cca';

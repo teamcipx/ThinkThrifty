@@ -1,4 +1,3 @@
-
 import { ImageMetadata } from '../types';
 import { db } from './firebase';
 import { 
@@ -10,7 +9,9 @@ import {
   where, 
   deleteDoc, 
   doc, 
-  limit 
+  limit,
+  updateDoc,
+  increment 
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "images";
@@ -23,6 +24,32 @@ export const storageService = {
       return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ImageMetadata));
     } catch (error) {
       console.error("Error fetching images: ", error);
+      return [];
+    }
+  },
+
+  getRelated: async (currentImage: ImageMetadata, limitCount = 5): Promise<ImageMetadata[]> => {
+    try {
+      const all = await storageService.getAll();
+      return all
+        .filter(img => img.id !== currentImage.id)
+        .map(img => {
+          let score = 0;
+          // High weight for same category
+          if (img.category === currentImage.category) score += 10;
+          // Weight for each shared keyword
+          const commonKeywords = img.keywords.filter(k => 
+            currentImage.keywords.some(ck => ck.toLowerCase() === k.toLowerCase())
+          );
+          score += commonKeywords.length * 2;
+          return { img, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limitCount)
+        .map(item => item.img);
+    } catch (error) {
+      console.error("Error fetching related images: ", error);
       return [];
     }
   },
@@ -43,6 +70,17 @@ export const storageService = {
     } catch (error) {
       console.error("Error deleting image: ", error);
       throw error;
+    }
+  },
+
+  incrementDownloadCount: async (id: string) => {
+    try {
+      const docRef = doc(db, COLLECTION_NAME, id);
+      await updateDoc(docRef, {
+        downloadCount: increment(1)
+      });
+    } catch (error) {
+      console.error("Error incrementing download count: ", error);
     }
   },
 

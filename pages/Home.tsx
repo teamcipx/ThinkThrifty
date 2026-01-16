@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { storageService } from '../services/storageService';
 import { CATEGORIES } from '../constants';
@@ -28,6 +27,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
       const matchesSearch = 
         img.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         img.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (img.author && img.author.toLowerCase().includes(searchQuery.toLowerCase())) ||
         img.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesCategory = selectedCategory === 'All' || img.category === selectedCategory;
@@ -57,7 +57,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
         <div className="relative max-w-2xl mx-auto">
           <input
             type="text"
-            placeholder="Search for images, categories, or keywords..."
+            placeholder="Search for images, artists, or keywords..."
             className="w-full pl-12 pr-4 py-4 rounded-2xl border-none shadow-xl focus:ring-2 focus:ring-indigo-500 text-lg outline-none"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -104,13 +104,19 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
               onClick={() => onSelectImage(img.id, img.slug)}
               className="group cursor-pointer bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300"
             >
-              <div className="aspect-[4/3] overflow-hidden bg-gray-100">
+              <div className="aspect-[4/3] overflow-hidden bg-gray-100 relative">
                 <img 
                   src={img.thumbnailUrl || img.url} 
                   alt={img.title}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
+                <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                   </svg>
+                   {img.downloadCount || 0}
+                </div>
               </div>
               <div className="p-4">
                 <div className="flex justify-between items-start mb-1">
@@ -121,7 +127,9 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
                     {img.category}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 line-clamp-2">{img.description}</p>
+                <div className="flex items-center justify-between mt-1">
+                  <p className="text-xs text-gray-400 font-medium">By {img.author || 'Anonymous'}</p>
+                </div>
               </div>
             </div>
           ))

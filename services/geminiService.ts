@@ -2,7 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 export const geminiService = {
   analyzeImage: async (base64Data: string) => {
-    // Re-initialize to ensure we use the latest environment variable in the current context
+    // Initialize inside the function to ensure the latest API key is used
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
     
     const response = await ai.models.generateContent({
@@ -35,14 +35,14 @@ export const geminiService = {
 
     const text = response.text;
     if (!text) {
-      throw new Error("Gemini API returned an invalid or empty response.");
+      throw new Error("Gemini API returned an empty response.");
     }
 
     try {
       return JSON.parse(text);
     } catch (e) {
-      console.error("Failed to parse Gemini response as JSON:", text);
-      throw new Error("Invalid format returned from AI analysis.");
+      console.error("Failed to parse Gemini response:", text);
+      throw new Error("AI metadata generation failed due to invalid response format.");
     }
   }
 };

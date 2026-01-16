@@ -1,4 +1,3 @@
-
 export interface ImageMetadata {
   id: string;
   url: string;
@@ -9,10 +8,12 @@ export interface ImageMetadata {
   category: string;
   keywords: string[];
   slug: string;
+  author: string;
   createdAt: number;
+  downloadCount: number;
 }
 
-export type View = 'home' | 'detail' | 'admin';
+export type View = 'home' | 'detail' | 'admin' | 'privacy' | 'about';
 
 export interface AppState {
   currentView: View;
