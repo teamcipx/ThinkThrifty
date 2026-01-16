@@ -137,8 +137,7 @@ const App: React.FC = () => {
             </div>
 
             <p className="text-gray-400 text-xs">
-              © {new Date().getFullYear()} Picghor. Powered by Gemini AI.
-            </p>
+              © {new Date().getFullYear()} PicGhor             </p>
           </div>
         </div>
       </footer>
