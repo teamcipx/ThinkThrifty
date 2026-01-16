@@ -187,7 +187,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
               </div>
 
               {/* Show Advertisement every 6 images */}
-              {(index + 1) % 6 === 0 && <AdBanner />}
+              {(index + 1) % 3 === 0 && <AdBanner />}
             </React.Fragment>
           ))
         ) : (
