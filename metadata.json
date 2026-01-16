@@ -1,0 +1,7 @@
+{
+  "name": "SnapVault - Minimalist Image Repository",
+  "description": "A clean, high-performance image hosting platform with an intelligent admin dashboard and seamless public discovery.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
