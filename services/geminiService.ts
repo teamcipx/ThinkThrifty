@@ -1,7 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export const geminiService = {
   analyzeImage: async (base64Data: string) => {
@@ -33,6 +33,11 @@ export const geminiService = {
       }
     });
 
-    return JSON.parse(response.text);
+    const text = response.text;
+    if (!text) {
+      throw new Error("Gemini API returned an empty response.");
+    }
+
+    return JSON.parse(text);
   }
 };
