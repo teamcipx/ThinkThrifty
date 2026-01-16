@@ -1,7 +1,53 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { storageService } from '../services/storageService';
 import { CATEGORIES } from '../constants';
 import { ImageMetadata } from '../types';
+
+/**
+ * AdBanner Component
+ * Handles the injection of the external advertisement scripts
+ */
+const AdBanner = () => {
+  const adRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Only run if the ref exists and hasn't been populated yet
+    if (adRef.current && adRef.current.innerHTML === '') {
+      const configScript = document.createElement('script');
+      configScript.type = 'text/javascript';
+      configScript.innerHTML = `
+        atOptions = {
+          'key' : '65ec9f7d8d86083bf154bf98b07df8f1',
+          'format' : 'iframe',
+          'height' : 60,
+          'width' : 468,
+          'params' : {}
+        };
+      `;
+
+      const invokeScript = document.createElement('script');
+      invokeScript.type = 'text/javascript';
+      invokeScript.src = 'https://www.highperformanceformat.com/65ec9f7d8d86083bf154bf98b07df8f1/invoke.js';
+
+      adRef.current.appendChild(configScript);
+      adRef.current.appendChild(invokeScript);
+    }
+  }, []);
+
+  return (
+    <div className="col-span-full flex flex-col items-center justify-center gap-2 py-12">
+      <span className="text-[10px] font-semibold text-zinc-400 uppercase tracking-widest">
+        Advertisement
+      </span>
+      <div 
+        ref={adRef}
+        className="relative w-full max-w-[468px] min-h-[60px] bg-zinc-50 border border-zinc-200 overflow-hidden shadow-sm flex items-center justify-center"
+      >
+        {/* Ad script loads here */}
+      </div>
+    </div>
+  );
+};
 
 interface HomeProps {
   onSelectImage: (id: string, slug: string) => void;
@@ -78,30 +124,8 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
         </div>
       </section>
 
-      <div class="flex flex-col items-center justify-center gap-2 py-4">
-  <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-    Advertisement
-  </span>
-
-  <div class="relative w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center">
-    
-    <script type="text/javascript">
-      atOptions = {
-        'key' : '65ec9f7d8d86083bf154bf98b07df8f1',
-        'format' : 'iframe',
-        'height' : 60,
-        'width' : 468,
-        'params' : {}
-      };
-    </script>
-    <script type="text/javascript" src="https://www.highperformanceformat.com/65ec9f7d8d86083bf154bf98b07df8f1/invoke.js"></script>
-    
-  </div>
-</div>
-      
-{/* Category Navigation - Fixed at Bottom */}
+      {/* Category Navigation */}
       <div className="bottom-8 left-0 w-full z-50 flex flex-wrap justify-center gap-2 py-4 pointer-events-none">
-        
         <div className="glass-nav p-1.5 rounded-full border border-zinc-200/50 flex flex-wrap justify-center gap-1 shadow-2xl pointer-events-auto bg-white/80 backdrop-blur-xl transition-transform duration-300 hover:scale-105">
           <button
             onClick={() => setSelectedCategory('All')}
@@ -128,37 +152,43 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
           ))}
         </div>
       </div>
-      {/* Image Grid */}
+
+      {/* Image Grid with Ad Injection */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-4">
         {filteredImages.length > 0 ? (
-          filteredImages.map((img) => (
-            <div 
-              key={img.id}
-              onClick={() => onSelectImage(img.id, img.slug)}
-              className="group cursor-pointer bg-white rounded-[2rem] overflow-hidden border border-zinc-100 image-card-shadow transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
-            >
-              <div className="aspect-[4/5] overflow-hidden bg-zinc-100 relative">
-                <img 
-                  src={img.thumbnailUrl || img.url} 
-                  alt={img.title}
-                  className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                <div className="absolute bottom-6 left-6 right-6 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75">
-                   <div className="bg-white/90 backdrop-blur-xl p-4 rounded-2xl border border-white/20">
-                     <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-1">{img.category}</p>
-                     <h3 className="font-bold text-zinc-900 line-clamp-1">{img.title}</h3>
-                   </div>
-                </div>
-                <div className="absolute top-6 right-6 bg-zinc-900/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                   </svg>
-                   {img.downloadCount || 0}
+          filteredImages.map((img, index) => (
+            <React.Fragment key={img.id}>
+              {/* Image Card */}
+              <div 
+                onClick={() => onSelectImage(img.id, img.slug)}
+                className="group cursor-pointer bg-white rounded-[2rem] overflow-hidden border border-zinc-100 image-card-shadow transition-all duration-500 animate-in fade-in slide-in-from-bottom-4"
+              >
+                <div className="aspect-[4/5] overflow-hidden bg-zinc-100 relative">
+                  <img 
+                    src={img.thumbnailUrl || img.url} 
+                    alt={img.title}
+                    className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  <div className="absolute bottom-6 left-6 right-6 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-75">
+                    <div className="bg-white/90 backdrop-blur-xl p-4 rounded-2xl border border-white/20">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 mb-1">{img.category}</p>
+                      <h3 className="font-bold text-zinc-900 line-clamp-1">{img.title}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute top-6 right-6 bg-zinc-900/40 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[10px] font-black flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    {img.downloadCount || 0}
+                  </div>
                 </div>
               </div>
-            </div>
+
+              {/* Show Advertisement every 6 images */}
+              {(index + 1) % 6 === 0 && <AdBanner />}
+            </React.Fragment>
           ))
         ) : (
           <div className="col-span-full py-40 text-center space-y-6">
