@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, ImageMetadata } from './types';
+import React, { useState, useEffect, useRef } from 'react';
+import { View } from './types';
 import { ADMIN_SECRET_PATH } from './constants';
 import { storageService } from './services/storageService';
 import Navbar from './components/Navbar';
@@ -8,6 +8,42 @@ import ImageDetail from './pages/ImageDetail';
 import Admin from './pages/Admin';
 import About from './pages/About';
 import Privacy from './pages/Privacy';
+
+// --- AdBanner Helper Component ---
+const AdBanner: React.FC = () => {
+  const bannerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (bannerRef.current && bannerRef.current.innerHTML === '') {
+      const confScript = document.createElement('script');
+      confScript.type = 'text/javascript';
+      confScript.innerHTML = `
+        atOptions = {
+          'key' : '65ec9f7d8d86083bf154bf98b07df8f1',
+          'format' : 'iframe',
+          'height' : 60,
+          'width' : 468,
+          'params' : {}
+        };
+      `;
+
+      const invokeScript = document.createElement('script');
+      invokeScript.type = 'text/javascript';
+      invokeScript.src = 'https://www.highperformanceformat.com/65ec9f7d8d86083bf154bf98b07df8f1/invoke.js';
+
+      bannerRef.current.appendChild(confScript);
+      bannerRef.current.appendChild(invokeScript);
+    }
+  }, []);
+
+  return (
+    <div 
+      ref={bannerRef}
+      className="relative w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center"
+    />
+  );
+};
+// -------------------------------
 
 const App: React.FC = () => {
   const [view, setView] = useState<View>('home');
@@ -103,14 +139,16 @@ const App: React.FC = () => {
       </main>
 
       <footer className="bg-white border-t border-gray-200 py-12 mt-12">
-        <div class="flex flex-col items-center justify-center gap-2 py-4">
-  <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-    Advertisement
-  </span>
+        {/* Advertisement Section */}
+        <div className="flex flex-col items-center justify-center gap-2 py-4">
+          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+            Advertisement
+          </span>
+          <AdBanner />
+        </div>
 
-  <div class="relative w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center">
-  
-        <div className="container mx-auto px-4">
+        {/* Footer Links */}
+        <div className="container mx-auto px-4 mt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-white font-bold text-xs">P</div>
@@ -124,7 +162,8 @@ const App: React.FC = () => {
             </div>
 
             <p className="text-gray-400 text-xs">
-              © {new Date().getFullYear()} PicGhor             </p>
+              © {new Date().getFullYear()} PicGhor
+            </p>
           </div>
         </div>
       </footer>
