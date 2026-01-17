@@ -164,7 +164,7 @@ const Home: React.FC<HomeProps> = ({ onSelectImage }) => {
               >
                 <div className="aspect-[4/5] overflow-hidden bg-zinc-100 relative">
                   <img 
-                    src={img.thumbnailUrl || img.url} 
+                    src={img.url} 
                     alt={img.title}
                     className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000 ease-out"
                     loading="lazy"
