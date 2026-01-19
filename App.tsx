@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ImageMetadata } from './types';
+import { View } from './types';
 import { ADMIN_SECRET_PATH } from './constants';
 import { storageService } from './services/storageService';
 import Navbar from './components/Navbar';
@@ -37,6 +37,7 @@ const App: React.FC = () => {
         }
       } else {
         setView('home');
+        setSelectedImageId(null);
       }
     };
 
@@ -47,17 +48,15 @@ const App: React.FC = () => {
   }, []);
 
   const navigateTo = (newView: View, slug: string | null = null) => {
-    if (newView === 'home') {
-      window.location.hash = '';
-    } else if (newView === 'admin') {
-      window.location.hash = ADMIN_SECRET_PATH;
-    } else if (newView === 'about') {
-      window.location.hash = 'about';
-    } else if (newView === 'privacy') {
-      window.location.hash = 'privacy';
-    } else if (newView === 'detail' && slug) {
-      window.location.hash = `p/${slug}`;
-    }
+    const hashMap: Record<string, string> = {
+      home: '',
+      admin: ADMIN_SECRET_PATH,
+      about: 'about',
+      privacy: 'privacy',
+      detail: `p/${slug}`
+    };
+
+    window.location.hash = hashMap[newView] ?? '';
   };
 
   const handleAdminAuth = (success: boolean) => {
@@ -69,10 +68,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar 
-        onNavigate={(v) => navigateTo(v)}
-        currentView={view}
-      />
+      <Navbar onNavigate={(v) => navigateTo(v)} currentView={view} />
       
       <main className="flex-grow container mx-auto px-4 py-8">
         {view === 'home' && (
@@ -80,36 +76,28 @@ const App: React.FC = () => {
         )}
         
         {view === 'detail' && selectedImageId && (
-          <ImageDetail 
-            id={selectedImageId} 
-            onBack={() => navigateTo('home')} 
-          />
+          <ImageDetail id={selectedImageId} onBack={() => navigateTo('home')} />
         )}
         
         {view === 'admin' && (
-          <Admin 
-            isAuthenticated={isAdminAuthenticated} 
-            onAuthenticate={handleAdminAuth} 
-          />
+          <Admin isAuthenticated={isAdminAuthenticated} onAuthenticate={handleAdminAuth} />
         )}
 
-        {view === 'about' && (
-          <About onNavigateHome={() => navigateTo('home')} />
-        )}
-
-        {view === 'privacy' && (
-          <Privacy onNavigateHome={() => navigateTo('home')} />
-        )}
+        {view === 'about' && <About onNavigateHome={() => navigateTo('home')} />}
+        {view === 'privacy' && <Privacy onNavigateHome={() => navigateTo('home')} />}
       </main>
 
       <footer className="bg-white border-t border-gray-200 py-12 mt-12">
-        <div class="flex flex-col items-center justify-center gap-2 py-4">
-  <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
-    Advertisement
-  </span>
+        {/* Advertisement Placeholder */}
+        <div className="flex flex-col items-center justify-center gap-2 py-4 mb-8">
+          <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest">
+            Advertisement
+          </span>
+          <div className="relative w-full max-w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center text-xs text-gray-400">
+            Ad Space
+          </div>
+        </div>
 
-  <div class="relative w-[468px] h-[60px] bg-gray-100 border border-gray-200 overflow-hidden shadow-sm flex items-center justify-center">
-  
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
@@ -124,7 +112,8 @@ const App: React.FC = () => {
             </div>
 
             <p className="text-gray-400 text-xs">
-              © {new Date().getFullYear()} PicGhor             </p>
+              © {new Date().getFullYear()} Picghor
+            </p>
           </div>
         </div>
       </footer>
