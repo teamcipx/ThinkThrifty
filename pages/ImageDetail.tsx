@@ -7,6 +7,7 @@ interface ImageDetailProps {
   onBack: () => void;
 }
 
+
 const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
   const [image, setImage] = useState<ImageMetadata | null>(null);
   const [relatedImages, setRelatedImages] = useState<ImageMetadata[]>([]);
