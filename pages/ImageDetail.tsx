@@ -13,6 +13,11 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
+  // Ad and Download States
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const [canDownload, setCanDownload] = useState(false);
+
   useEffect(() => {
     const loadImage = async () => {
       setLoading(true);
@@ -20,8 +25,6 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
       if (data) {
         setImage(data);
         document.title = `${data.title} | Picghor`;
-        
-        // Load related images
         const related = await storageService.getRelated(data);
         setRelatedImages(related);
       }
@@ -30,6 +33,41 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
     };
     loadImage();
   }, [id]);
+
+  // Ad Script Injection Logic
+  useEffect(() => {
+    if (showAdPopup) {
+      // Load Ad Script 1
+      const script1 = document.createElement('script');
+      script1.src = "https://pl28514144.effectivegatecpm.com/6b/2d/ea/6b2dea7b79eb338e53962e31b8e635f8.js";
+      script1.async = true;
+      document.body.appendChild(script1);
+
+      // Load Ad Script 2 (Invoke)
+      const script2 = document.createElement('script');
+      script2.src = "https://pl28514147.effectivegatecpm.com/9bdaa56042780cf3290ef9004bb9bf72/invoke.js";
+      script2.async = true;
+      document.body.appendChild(script2);
+
+      // Countdown Timer
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            setCanDownload(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+        if (document.body.contains(script1)) document.body.removeChild(script1);
+        if (document.body.contains(script2)) document.body.removeChild(script2);
+      };
+    }
+  }, [showAdPopup]);
 
   if (loading) {
     return (
@@ -51,7 +89,8 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
 
   const getFullUrl = () => `${window.location.origin}${window.location.pathname}#p/${image.slug}`;
 
-  const handleDownload = async () => {
+  // Actual Download Execution
+  const handleFinalDownload = async () => {
     try {
       await storageService.incrementDownloadCount(image.id);
       setImage(prev => prev ? { ...prev, downloadCount: (prev.downloadCount || 0) + 1 } : null);
@@ -65,9 +104,15 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Reset and close popup
+      setShowAdPopup(false);
+      setCanDownload(false);
+      setCountdown(5);
     } catch (err) {
       console.error('Failed to download image', err);
       window.open(image.url, '_blank');
+      setShowAdPopup(false);
     }
   };
 
@@ -79,18 +124,9 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
   };
 
   const handleShare = async () => {
-    const shareData = {
-      title: image.title,
-      text: `Picghor Asset: ${image.title}`,
-      url: getFullUrl()
-    };
-
+    const shareData = { title: image.title, text: `Picghor Asset: ${image.title}`, url: getFullUrl() };
     if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        console.error('Share failed', err);
-      }
+      try { await navigator.share(shareData); } catch (err) { console.error('Share failed', err); }
     } else {
       handleCopyLink();
     }
@@ -101,7 +137,48 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in duration-700 pb-32 pt-8">
+    <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in duration-700 pb-32 pt-8 px-4">
+      {/* Ad Modal Popup */}
+      {showAdPopup && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-zinc-900/90 backdrop-blur-md p-4">
+          <div className="bg-white rounded-[2.5rem] max-w-md w-full p-8 text-center space-y-6 shadow-2xl animate-in zoom-in duration-300">
+            <div className="space-y-2">
+              <h2 className="text-2xl font-black text-zinc-900 tracking-tighter">Preparing Your Asset</h2>
+              <p className="text-zinc-500 text-sm font-medium">Wait a few seconds for the high-speed link...</p>
+            </div>
+            
+            {/* Ad Container */}
+            <div className="min-h-[150px] bg-zinc-50 rounded-2xl flex flex-col items-center justify-center border border-dashed border-zinc-200 overflow-hidden relative">
+               <div id="container-9bdaa56042780cf3290ef9004bb9bf72" className="w-full"></div>
+               <span className="absolute top-2 right-3 text-[8px] font-bold text-zinc-300 uppercase tracking-widest">Sponsored</span>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {!canDownload ? (
+                <div className="flex items-center justify-center gap-3 bg-zinc-100 py-4 rounded-2xl text-zinc-400 font-bold uppercase text-xs tracking-widest">
+                  <div className="w-4 h-4 border-2 border-zinc-300 border-t-indigo-600 rounded-full animate-spin"></div>
+                  Generating Link in {countdown}s
+                </div>
+              ) : (
+                <button 
+                  onClick={handleFinalDownload}
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 rounded-2xl shadow-xl shadow-indigo-200 transition-all animate-bounce uppercase text-xs tracking-[0.2em]"
+                >
+                  Start Download Now
+                </button>
+              )}
+              
+              <button 
+                onClick={() => { setShowAdPopup(false); setCountdown(5); }}
+                className="text-zinc-400 text-[10px] font-bold uppercase tracking-widest hover:text-zinc-900 transition-colors"
+              >
+                Cancel and Return
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button 
         onClick={onBack}
         className="group flex items-center gap-3 text-zinc-400 hover:text-zinc-900 transition-all font-bold uppercase tracking-widest text-[10px]"
@@ -161,7 +238,7 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
           <div className="space-y-8">
             <div className="flex flex-col gap-4">
               <button 
-                onClick={handleDownload}
+                onClick={() => setShowAdPopup(true)}
                 className="w-full bg-zinc-900 hover:bg-indigo-600 text-white font-black py-5 rounded-[1.5rem] shadow-2xl shadow-indigo-100 transition-all flex items-center justify-center gap-4 active:scale-[0.98] uppercase tracking-[0.15em] text-xs"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
