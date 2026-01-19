@@ -12,8 +12,6 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
   const [relatedImages, setRelatedImages] = useState<ImageMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
-  const [showAdPopup, setShowAdPopup] = useState(false);
-  const [countdown, setCountdown] = useState(5);
 
   useEffect(() => {
     const loadImage = async () => {
@@ -21,6 +19,9 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
       const data = await storageService.getById(id);
       if (data) {
         setImage(data);
+        document.title = `${data.title} | Picghor`;
+        
+        // Load related images
         const related = await storageService.getRelated(data);
         setRelatedImages(related);
       }
@@ -30,149 +31,224 @@ const ImageDetail: React.FC<ImageDetailProps> = ({ id, onBack }) => {
     loadImage();
   }, [id]);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (showAdPopup && countdown > 0) {
-      timer = setInterval(() => setCountdown(prev => prev - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [showAdPopup, countdown]);
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-40">
+        <div className="w-12 h-12 border-4 border-zinc-100 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
-  if (loading) return (
-    <div className="flex justify-center items-center h-screen bg-white">
-      <div className="w-10 h-10 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+  if (!image) return (
+    <div className="flex flex-col items-center justify-center py-40 gap-6">
+      <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-300">
+        <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+      </div>
+      <p className="text-zinc-500 font-medium">Asset not found in repository.</p>
+      <button onClick={onBack} className="text-indigo-600 font-black tracking-widest uppercase text-xs hover:underline">Return to Gallery</button>
     </div>
   );
 
-  if (!image) return null;
+  const getFullUrl = () => `${window.location.origin}${window.location.pathname}#p/${image.slug}`;
+
+  const handleDownload = async () => {
+    try {
+      await storageService.incrementDownloadCount(image.id);
+      setImage(prev => prev ? { ...prev, downloadCount: (prev.downloadCount || 0) + 1 } : null);
+
+      const response = await fetch(image.url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${image.slug}.jpg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download image', err);
+      window.open(image.url, '_blank');
+    }
+  };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const url = getFullUrl();
+    navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const shareOnFB = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`, '_blank');
+  const handleShare = async () => {
+    const shareData = {
+      title: image.title,
+      text: `Picghor Asset: ${image.title}`,
+      url: getFullUrl()
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.error('Share failed', err);
+      }
+    } else {
+      handleCopyLink();
+    }
+  };
+
+  const navigateToRelated = (slug: string) => {
+    window.location.hash = `p/${slug}`;
+  };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-12 font-sans selection:bg-indigo-100">
-      
-      {/* ডাউনলোড পপআপ (Aesthetic Glassmorphism) */}
-      {showAdPopup && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-white/60 backdrop-blur-2xl">
-          <div className="bg-white border border-zinc-100 rounded-[3rem] p-12 max-w-md w-full text-center shadow-[0_32px_64px_-15px_rgba(0,0,0,0.1)]">
-            <h2 className="text-2xl font-black text-zinc-900 mb-2">ফাইলটি প্রস্তুত হচ্ছে</h2>
-            <p className="text-zinc-400 text-sm mb-8">অনুগ্রহ করে কয়েক সেকেন্ড অপেক্ষা করুন...</p>
-            
-            <div className="relative inline-flex items-center justify-center mb-8">
-              <svg className="w-24 h-24 transform -rotate-90">
-                <circle cx="48" cy="48" r="45" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-zinc-100" />
-                <circle cx="48" cy="48" r="45" stroke="currentColor" strokeWidth="2" fill="transparent" className="text-indigo-600 transition-all duration-1000" strokeDasharray={282} strokeDashoffset={282 - (282 * (5-countdown)) / 5} />
-              </svg>
-              <span className="absolute text-xl font-black">{countdown}</span>
-            </div>
-
-            {countdown === 0 ? (
-              <button onClick={() => window.open(image.url)} className="w-full bg-indigo-600 text-white py-5 rounded-3xl font-bold hover:bg-black transition-all shadow-lg shadow-indigo-200">এখনই ডাউনলোড করুন</button>
-            ) : (
-              <div className="w-full bg-zinc-50 text-zinc-400 py-5 rounded-3xl font-bold">লিংক জেনারেট হচ্ছে...</div>
-            )}
-            <button onClick={() => setShowAdPopup(false)} className="mt-6 text-zinc-400 text-xs font-bold uppercase tracking-widest hover:text-red-500">বাতিল করুন</button>
-          </div>
+    <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in duration-700 pb-32 pt-8">
+      <button 
+        onClick={onBack}
+        className="group flex items-center gap-3 text-zinc-400 hover:text-zinc-900 transition-all font-bold uppercase tracking-widest text-[10px]"
+      >
+        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center group-hover:bg-zinc-900 group-hover:text-white group-hover:border-zinc-900 transition-all">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
         </div>
-      )}
-
-      {/* ব্যাক বাটন */}
-      <button onClick={onBack} className="mb-10 flex items-center gap-3 text-zinc-400 hover:text-black transition-all group">
-        <div className="w-10 h-10 rounded-full border border-zinc-100 flex items-center justify-center group-hover:bg-zinc-50">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7"/></svg>
-        </div>
-        <span className="text-[10px] font-black uppercase tracking-[0.2em]">গ্যালারিতে ফিরে যান</span>
+        Back to Exploration
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-        
-        {/* মেইন ইমেজ সেকশন */}
-        <div className="lg:col-span-8">
-          <div className="bg-[#F9F9FB] rounded-[3.5rem] p-6 md:p-12 flex items-center justify-center overflow-hidden shadow-inner">
-            <img src={image.url} alt={image.title} className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] hover:scale-[1.02] transition-transform duration-700" />
-          </div>
-          
-          {/* ইমেজ ফিড অ্যাড (নিচে) */}
-          <div className="mt-12 p-8 bg-zinc-50 rounded-[2.5rem] border border-dashed border-zinc-200 text-center">
-            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Sponsored Content</p>
-            <div id="container-9bdaa56042780cf3290ef9004bb9bf72"></div>
-            <script async src="https://pl28514147.effectivegatecpm.com/9bdaa56042780cf3290ef9004bb9bf72/invoke.js"></script>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Main Image Stage */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="bg-zinc-900 rounded-[3rem] overflow-hidden shadow-2xl shadow-indigo-100 flex items-center justify-center p-4 min-h-[500px] relative group">
+            <img 
+              src={image.url} 
+              alt={image.title} 
+              className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain transition-transform duration-700 group-hover:scale-[1.01]"
+            />
+            <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
           </div>
         </div>
 
-        {/* সাইডবার সেকশন */}
-        <div className="lg:col-span-4 space-y-12">
+        {/* Sidebar Controls */}
+        <div className="lg:col-span-4 space-y-10">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-widest">
-              {image.category || 'Premium Asset'}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600 px-3 py-1 bg-indigo-50 rounded-full border border-indigo-100">
+                  {image.category}
+                </span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                  REF: {image.slug.substring(0, 8)}
+                </span>
+              </div>
+              <h1 className="text-4xl font-black text-zinc-900 leading-tight tracking-tighter">
+                {image.title}
+              </h1>
+              <div className="flex items-center gap-3 pt-2">
+                <div className="w-10 h-10 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-400 font-black text-sm uppercase">
+                   {image.author ? image.author.charAt(0) : 'A'}
+                </div>
+                <div>
+                  <p className="text-zinc-900 font-bold text-sm tracking-tight">{image.author || 'Anonymous Artist'}</p>
+                  <p className="text-zinc-400 text-xs">Curated {new Date(image.createdAt).toLocaleDateString()}</p>
+                </div>
+              </div>
             </div>
-            <h1 className="text-4xl font-black text-zinc-900 leading-[1.1] tracking-tight">
-              {image.title}
-            </h1>
-            <p className="text-zinc-500 text-lg font-medium leading-relaxed">
-              {image.description || 'এই ছবিটির কোনো বর্ণনা দেওয়া হয়নি। এটি পিকঘোর লাইব্রেরির একটি প্রিমিয়াম সম্পদ।'}
+
+            <p className="text-zinc-500 text-lg leading-relaxed font-medium">
+              {image.description}
             </p>
           </div>
 
-          {/* অ্যাকশন বাটন */}
-          <div className="space-y-4">
-            <button onClick={() => setShowAdPopup(true)} className="w-full bg-zinc-900 text-white py-6 rounded-3xl font-black text-xs uppercase tracking-[0.2em] hover:bg-indigo-600 transition-all shadow-2xl shadow-zinc-200">
-              ফ্রি ডাউনলোড করুন
-            </button>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <button onClick={shareOnFB} className="flex items-center justify-center gap-2 py-4 bg-white border border-zinc-100 rounded-2xl hover:border-indigo-600 transition-all">
-                <span className="text-xs font-bold text-zinc-900">ফেসবুক শেয়ার</span>
+          <div className="space-y-8">
+            <div className="flex flex-col gap-4">
+              <button 
+                onClick={handleDownload}
+                className="w-full bg-zinc-900 hover:bg-indigo-600 text-white font-black py-5 rounded-[1.5rem] shadow-2xl shadow-indigo-100 transition-all flex items-center justify-center gap-4 active:scale-[0.98] uppercase tracking-[0.15em] text-xs"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download Masterfile
               </button>
-              <button onClick={handleCopyLink} className={`flex items-center justify-center gap-2 py-4 border rounded-2xl transition-all ${copied ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white border-zinc-100 text-zinc-900'}`}>
-                <span className="text-xs font-bold">{copied ? 'লিংক কপি হয়েছে' : 'লিংক কপি করুন'}</span>
-              </button>
+              
+              <div className="flex gap-4">
+                <button 
+                  onClick={handleShare}
+                  className="flex-grow bg-white border border-zinc-200 hover:border-zinc-900 text-zinc-900 font-bold py-5 rounded-[1.5rem] transition-all flex items-center justify-center gap-3 active:scale-[0.98] uppercase tracking-[0.1em] text-xs"
+                >
+                  Share Asset
+                </button>
+                <button 
+                  onClick={handleCopyLink}
+                  className={`w-16 flex items-center justify-center rounded-[1.5rem] border transition-all ${copied ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-zinc-200 text-zinc-400 hover:border-zinc-900'}`}
+                  title="Copy Link"
+                >
+                  {copied ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/></svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
-          </div>
 
-          {/* ইনফো কার্ড */}
-          <div className="p-8 bg-zinc-50 rounded-[2.5rem] space-y-4">
-             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                <span>আর্টিস্ট</span>
-                <span className="text-zinc-900">{image.author || 'Anonymous'}</span>
-             </div>
-             <div className="h-px bg-zinc-200/50 w-full" />
-             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                <span>ডাউনলোড</span>
-                <span className="text-indigo-600">{image.downloadCount || 0} বার</span>
-             </div>
-          </div>
-
-          {/* সাইডবার ব্যানার অ্যাড */}
-          <div className="rounded-[2.5rem] overflow-hidden min-h-[300px] bg-zinc-100 flex items-center justify-center relative">
-             <span className="absolute top-4 left-4 text-[8px] font-bold text-zinc-300 uppercase">বিজ্ঞাপন</span>
-             <script src="https://pl28514144.effectivegatecpm.com/6b/2d/ea/6b2dea7b79eb338e53962e31b8e635f8.js"></script>
+            <div className="space-y-4 pt-4">
+              <h3 className="text-[10px] font-black text-zinc-900 uppercase tracking-[0.3em]">AI Metadata Tags</h3>
+              <div className="flex flex-wrap gap-2">
+                {image.keywords.map((tag, idx) => (
+                  <span key={idx} className="bg-zinc-50 text-zinc-500 border border-zinc-100 px-4 py-2 rounded-xl text-xs font-bold tracking-tight hover:bg-zinc-100 transition-colors">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+            
+            <div className="bg-zinc-50 rounded-2xl p-6 border border-zinc-100">
+               <div className="flex items-center justify-between mb-2">
+                 <span className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Repository Stats</span>
+                 <span className="text-xs font-black text-indigo-600">{image.downloadCount || 0} USE CASES</span>
+               </div>
+               <div className="w-full bg-zinc-200 h-1.5 rounded-full overflow-hidden">
+                 <div className="bg-indigo-600 h-full w-[45%]" />
+               </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* রিলেটেড সেকশন */}
       {relatedImages.length > 0 && (
-        <section className="mt-32 space-y-12">
-          <div className="flex items-end justify-between">
-            <h2 className="text-3xl font-black tracking-tighter">আরও কিছু দারুণ ছবি</h2>
-            <button onClick={onBack} className="text-[10px] font-black uppercase tracking-widest text-indigo-600 border-b-2 border-indigo-600 pb-1">সবগুলো দেখুন</button>
+        <section className="space-y-10 animate-in slide-in-from-bottom-12 duration-1000">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-2xl font-black text-zinc-900 tracking-tighter">Related Discoveries</h2>
+            <div className="h-px flex-grow mx-8 bg-zinc-100 hidden md:block"></div>
+            <button 
+              onClick={onBack}
+              className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+            >
+              See All Assets
+            </button>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
             {relatedImages.map((rel) => (
-              <div key={rel.id} onClick={() => window.location.hash = `p/${rel.slug}`} className="group cursor-pointer">
-                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-zinc-100 mb-4 shadow-sm group-hover:shadow-2xl group-hover:shadow-indigo-100 transition-all duration-500">
-                  <img src={rel.thumbnailUrl || rel.url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+              <div 
+                key={rel.id}
+                onClick={() => navigateToRelated(rel.slug)}
+                className="group cursor-pointer space-y-4"
+              >
+                <div className="aspect-[4/5] rounded-[1.5rem] overflow-hidden bg-zinc-100 relative shadow-sm transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-indigo-100/50 group-hover:-translate-y-2">
+                  <img 
+                    src={rel.thumbnailUrl || rel.url} 
+                    alt={rel.title}
+                    className="w-full h-full object-cover transform scale-100 group-hover:scale-110 transition-transform duration-1000"
+                  />
+                  <div className="absolute inset-0 bg-zinc-900/0 group-hover:bg-zinc-900/20 transition-colors" />
                 </div>
-                <h3 className="text-sm font-bold text-zinc-900 line-clamp-1 group-hover:text-indigo-600 transition-colors">{rel.title}</h3>
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">BY {rel.author}</p>
+                <div className="px-1">
+                  <h4 className="text-sm font-black text-zinc-900 line-clamp-1 group-hover:text-indigo-600 transition-colors">{rel.title}</h4>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">By {rel.author}</p>
+                </div>
               </div>
             ))}
           </div>
